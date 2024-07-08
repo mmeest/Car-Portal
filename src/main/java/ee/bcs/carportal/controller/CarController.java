@@ -22,17 +22,9 @@ public class CarController {
     }
 
 
-
-    // Bonus endpoints go to below
-    // Please use @Tag annotation as below with all bonus endpoints:
-    // @Tag(name = "Bonus")
-
-
-
     // Extra practice endpoints go to below
     // Please use @Tag annotation as below with all extra practice endpoints:
     // @Tag(name = "Extra practice")
-
 
 
     // ALL PRIVATE METHODS go to below
