@@ -1,32 +1,67 @@
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.2.2'
-	id 'io.spring.dependency-management' version '1.1.4'
+    id 'java'
+    id 'org.springframework.boot' version '3.2.2'
+    id 'io.spring.dependency-management' version '1.1.4'
 }
 
 group = 'ee.bcs'
 version = '0.0.1-SNAPSHOT'
 
 java {
-	sourceCompatibility = '21'
+    sourceCompatibility = '21'
 }
 
 repositories {
-	mavenCentral()
+    mavenCentral()
 }
 
 dependencies {
+    // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'org.springframework:spring-test'
 
-	// Spring Boot
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework:spring-test'
-
-	// Swagger
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.2.0'
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+// Register the task to install Git hooks
+tasks.register('installGitHooks', Copy) {
+    description = 'Installs Git hooks'
+    from fileTree('hooks') {
+        include '**/*'
+    }
+    into '.git/hooks'
+    doLast {
+        fileTree('.git/hooks').files.each { file ->
+            file.setExecutable(true)
+        }
+        println 'Git hooks installed.'
+    }
+}
+
+// Ensure the hooks are installed before any build tasks
+tasks.named('assemble').configure {
+    dependsOn(tasks.named('installGitHooks'))
+}
+
+tasks.named('check').configure {
+    dependsOn(tasks.named('installGitHooks'))
+}
+
+// Automatically run the task after project evaluation
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile).configureEach {
+        dependsOn(tasks.named('installGitHooks'))
+    }
+}
+
+// Add this line to ensure the task runs on project refresh
+tasks.named('build').configure {
+    dependsOn(tasks.named('installGitHooks'))
 }
