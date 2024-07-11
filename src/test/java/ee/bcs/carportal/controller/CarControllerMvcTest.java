@@ -209,4 +209,48 @@ class CarControllerMvcTest {
                 .andExpect(content().contentType("text/plain;charset=UTF-8"))
                 .andExpect(content().string("No car with id 5 exists"));
     }
+
+    @Test
+    public void shouldReturnCarsInRegistrationTaxRange1100To1200() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/registration-tax-range")
+                        .param("from", "1100")
+                        .param("to", "1200")
+                        .param("baseYear", "2025"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string("Cars in tax range €1100 - €1200:\n\nMake: Tesla\nModel: Model 3\nYear: 2020\nTax rate: 2.5%\nTax amount: €1100\n\nMake: Toyota\nModel: Prius\nYear: 2020\nTax rate: 3.8%\nTax amount: €1140\n\nNumber of car models: 2"));
+    }
+
+    @Test
+    public void shouldReturnNoCarsInRegistrationTaxRange2000To3000() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/registration-tax-range")
+                        .param("from", "2000")
+                        .param("to", "3000")
+                        .param("baseYear", "2025"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string("No cars found in tax range €2000 - €3000"));
+    }
+
+    @Test
+    public void shouldReturnCarsInAnnualTaxRange50To100() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/annual-tax-range")
+                        .param("from", "50")
+                        .param("to", "100")
+                        .param("baseYear", "2025"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string("Cars in tax range €50 - €100:\n\nMake: Tesla\nModel: Model 3\nYear: 2020\nTax amount: €50\n\nMake: Honda\nModel: Civic\nYear: 2021\nTax amount: €97\n\nMake: Toyota\nModel: Camry\nYear: 2022\nTax amount: €94\n\nMake: Toyota\nModel: Prius\nYear: 2020\nTax amount: €75\n\nNumber of car models: 4"));
+    }
+
+    @Test
+    public void shouldReturnNoCarsInAnnualTaxRange500To600() throws Exception {
+        mockMvc.perform(get("/api/v1/cars/annual-tax-range")
+                        .param("from", "500")
+                        .param("to", "600")
+                        .param("baseYear", "2025"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("text/plain;charset=UTF-8"))
+                .andExpect(content().string("No cars found in tax range €500 - €600"));
+    }
 }
