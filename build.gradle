@@ -30,6 +30,7 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+
 // Register the task to install Git hooks
 tasks.register('installGitHooks', Copy) {
     description = 'Installs Git hooks'
@@ -45,23 +46,10 @@ tasks.register('installGitHooks', Copy) {
     }
 }
 
-// Ensure the hooks are installed before any build tasks
-tasks.named('assemble').configure {
-    dependsOn(tasks.named('installGitHooks'))
-}
-
-tasks.named('check').configure {
-    dependsOn(tasks.named('installGitHooks'))
-}
-
-// Automatically run the task after project evaluation
+// Automatically run the 'installGitHooks' task after project evaluation
 gradle.projectsEvaluated {
     tasks.withType(JavaCompile).configureEach {
         dependsOn(tasks.named('installGitHooks'))
     }
 }
 
-// Add this line to ensure the task runs on project refresh
-tasks.named('build').configure {
-    dependsOn(tasks.named('installGitHooks'))
-}
