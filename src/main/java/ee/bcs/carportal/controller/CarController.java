@@ -20,8 +20,7 @@ public class CarController {
     private static final String FUEL_TYPE_ELECTRIC = "Electric";
     private static final String FUEL_TYPE_HYBRID = "Hybrid";
     private static final String FUEL_TYPE_PETROL = "Petrol";
-
-    public static final int ANNUAL_TAX_BASE_FEE = 50;
+    private static final double BASE_FEE = 50.0;
 
     // Mandatory endpoints go to below
     // Please use @Tag annotation as below with all mandatory endpoints:
@@ -45,7 +44,8 @@ public class CarController {
         int carCounter = 0;
         StringBuilder sb = new StringBuilder("Cars in price range €" + from + " - €" + to + ":");
         for (int carId = 0; carId < prices.length; carId++) {
-            if (prices[carId] >= from && prices[carId] <= to) {
+            boolean isWithinPriceRange = prices[carId] >= from && prices[carId] <= to;
+            if (isWithinPriceRange) {
                 sb.append("\n\n").append(getCarDetailedInfoByCarId(carId));
                 carCounter++;
             }
@@ -62,7 +62,9 @@ public class CarController {
         int carCounter = 0;
         StringBuilder sb = new StringBuilder("Green cars in price range €" + from + " - €" + to + ": ");
         for (int carId = 0; carId < prices.length; carId++) {
-            if (prices[carId] >= from && prices[carId] <= to && (fuelTypes[carId].equals(FUEL_TYPE_ELECTRIC) || fuelTypes[carId].equals(FUEL_TYPE_HYBRID))) {
+            boolean isWithinPriceRange = prices[carId] >= from && prices[carId] <= to;
+            boolean isGreenCar = fuelTypes[carId].equals(FUEL_TYPE_ELECTRIC) || fuelTypes[carId].equals(FUEL_TYPE_HYBRID);
+            if (isWithinPriceRange && isGreenCar) {
                 sb.append(carModels[carId]).append(" (").append(fuelTypes[carId]).append("), ");
                 carCounter++;
             }
@@ -74,9 +76,9 @@ public class CarController {
     @Tag(name = "Mandatory")
     public String getCarRegistrationTaxByCarId(@PathVariable int carId, @RequestParam int baseYear) {
         double registrationTaxRate = calculateRegistrationTaxRate(carId, baseYear);
-        double registrationTaxAmount = calculateTaxAmount(registrationTaxRate, prices[carId]);
+        double taxAmount = calculateTaxAmount(carId, registrationTaxRate);
         return "The registration tax rate for " + modelYears[carId] + " " + manufacturers[carId] + " "
-                + carModels[carId] + " is " + registrationTaxRate + "% with total tax amount €" + String.format("%.0f", registrationTaxAmount);
+                + carModels[carId] + " is " + registrationTaxRate + "% with total tax amount €" + String.format("%.0f", taxAmount);
     }
 
     @GetMapping("/car/{carId}/annual-tax")
@@ -128,25 +130,64 @@ public class CarController {
     // Please use @Tag annotation as below with all extra practice endpoints:
     // @Tag(name = "Extra practice")
 
-    // ALL PRIVATE METHODS go to below
-    private double calculateRegistrationTaxRate(int carId, int baseYear) {
-        double registrationTaxRate = getFuelTypeAdjustedRegistrationTaxRate(fuelTypes[carId]);
-        registrationTaxRate = adjustRegistrationTaxRateForEmissions(registrationTaxRate, emissions[carId]);
-        registrationTaxRate = adjustRegistrationTaxRateForModelYear(registrationTaxRate, baseYear, modelYears[carId]);
 
-        // apply rounding to one decimal place
-        return roundToOneDecimalPlace(registrationTaxRate);
+    @GetMapping("/cars/registration-tax-range")
+    @Tag(name = "Extra practice")
+    public String getCarsByRegistrationTaxRange(@RequestParam int from, @RequestParam int to, @RequestParam int baseYear) {
+        int carCounter = 0;
+        StringBuilder sb = new StringBuilder("Cars in tax range €" + from + " - €" + to + ":");
+        for (int carId = 0; carId < prices.length; carId++) {
+            double taxRate = calculateRegistrationTaxRate(carId, baseYear);
+            double taxAmount = calculateTaxAmount(carId, taxRate);
+            if (taxAmount >= from && taxAmount <= to) {
+                sb.append("\n\n").append(getCarInfo(manufacturers[carId], carModels[carId], modelYears[carId]));
+                sb.append("\nTax rate: ").append(taxRate).append("%");
+                sb.append("\nTax amount: €").append(String.format("%.0f", taxAmount));
+                carCounter++;
+            }
+        }
+        if (carCounter == 0) {
+            return "No cars found in tax range €" + from + " - €" + to;
+        }
+        return sb + "\n\nNumber of car models: " + carCounter;
     }
 
-    private double getFuelTypeAdjustedRegistrationTaxRate(String fuelType) {
+    @GetMapping("/cars/annual-tax-range")
+    @Tag(name = "Extra practice")
+    public String getCarsByAnnualTaxRange(@RequestParam int from, @RequestParam int to, @RequestParam int baseYear) {
+        int carCounter = 0;
+        StringBuilder sb = new StringBuilder("Cars in tax range €" + from + " - €" + to + ":");
+        for (int carId = 0; carId < prices.length; carId++) {
+            double annualTax = calculateAnnualTax(carId, baseYear);
+            if (annualTax >= from && annualTax <= to) {
+                sb.append("\n\n").append(getCarInfo(manufacturers[carId], carModels[carId], modelYears[carId]));
+                sb.append("\nTax amount: €").append(String.format("%.0f", annualTax));
+                carCounter++;
+            }
+        }
+        if (carCounter == 0) {
+            return "No cars found in tax range €" + from + " - €" + to;
+        }
+        return sb + "\n\nNumber of car models: " + carCounter;
+    }
+
+
+    // ALL PRIVATE METHODS go to below
+    private double calculateRegistrationTaxRate(int carId, int baseYear) {
+        double taxRate = getFuelTypeAdjustedRegistrationTaxRate(carId);
+        taxRate = getEmissionsAdjustedRegistrationTaxRate(carId, taxRate);
+        taxRate = getModelYearAdjustedRegistrationTaxRate(carId, baseYear, taxRate);
+        return getRoundedRegistrationTaxRate(taxRate);
+    }
+
+    private double getFuelTypeAdjustedRegistrationTaxRate(int carId) {
         final double BASE_TAX_RATE = 5.0;
         final double ELECTRIC_ADJUSTMENT = -1.5;
         final double HYBRID_ADJUSTMENT = -0.5;
         final double PETROL_ADJUSTMENT = 1.5;
+        double taxRate = BASE_TAX_RATE; // Base tax rate of 5%
 
-        double taxRate = BASE_TAX_RATE;
-
-        switch (fuelType) {
+        switch (fuelTypes[carId]) {
             case FUEL_TYPE_ELECTRIC -> taxRate += ELECTRIC_ADJUSTMENT;
             case FUEL_TYPE_HYBRID -> taxRate += HYBRID_ADJUSTMENT;
             case FUEL_TYPE_PETROL -> taxRate += PETROL_ADJUSTMENT;
@@ -154,70 +195,71 @@ public class CarController {
         return taxRate;
     }
 
-    private double adjustRegistrationTaxRateForEmissions(double taxRate, double emissions) {
-        final double EMISSION_MULTIPLIER = 10.0;
-        return taxRate + emissions * EMISSION_MULTIPLIER;
+    private double getEmissionsAdjustedRegistrationTaxRate(int carId, double taxRate) {
+        final double EMISSION_MULTIPLIER = 10.0; // For each 0.01 in emissions, increase tax rate by 0.1%
+        double emissionAdjustment = emissions[carId] * EMISSION_MULTIPLIER; // For each 0.01 in emissions, increase tax rate by 0.1%
+        taxRate += emissionAdjustment;
+        return taxRate;
     }
 
-    private double adjustRegistrationTaxRateForModelYear(double taxRate, int baseYear, int modelYear) {
-        final double MODEL_YEAR_MULTIPLIER = 0.2;
-        int yearDifference = baseYear - modelYear;
-        return taxRate - yearDifference * MODEL_YEAR_MULTIPLIER;
+
+    private double getModelYearAdjustedRegistrationTaxRate(int carId, int baseYear, double taxRate) {
+        final double MODEL_YEAR_MULTIPLIER = 0.2; // Reduce 0.2% for each year older than the base year
+        int yearDifference = baseYear - modelYears[carId];
+        double modelYearAdjustment = yearDifference * MODEL_YEAR_MULTIPLIER; // Reduce 0.2% for each year older than the base year
+        taxRate -= modelYearAdjustment;
+        return taxRate;
     }
 
-    private double roundToOneDecimalPlace(double value) {
-        return Math.round(value * 10.0) / 10.0;
+    private static double getRoundedRegistrationTaxRate(double taxRate) {
+        return Math.round(taxRate * 10.0) / 10.0;
     }
 
-    private double calculateTaxAmount(double taxRate, int price) {
-        return Math.round(price * (taxRate / 100));
+    private double calculateTaxAmount(int carId, double registrationTaxRate) {
+        return prices[carId] * (registrationTaxRate / 100);
     }
 
     private double calculateAnnualTax(int carId, int baseYear) {
-
-        // Adjust for fuel type
-        double annualTax = getFuelTypeAdjustAnnualTax(fuelTypes[carId]);
-
-        // Adjust for emissions
-        annualTax = adjustAnnualTaxForEmissions(annualTax, emissions[carId]);
-
-        // Adjust for model year
-        annualTax = adjustAnnualTaxForModelYear(annualTax, baseYear, modelYears[carId]);
-
-        // Ensure the final annual tax is at least the base fee
-        return adjustMinimumAnnualTax(annualTax);
+        double annualTax = getFuelTypeAdjustedAnnualTax(carId);
+        annualTax = getEmissionsAdjustedAnnualTax(carId, annualTax);
+        annualTax = getModelYearAdjustedAnnualTax(carId, baseYear, annualTax);
+        return getMinimumFeeAdjustedAnnualTax(annualTax);
     }
 
-    private double getFuelTypeAdjustAnnualTax(String fuelType) {
+    private double getFuelTypeAdjustedAnnualTax(int carId) {
         final double HYBRID_ADJUSTMENT = 20.0;
         final double PETROL_ADJUSTMENT = 30.0;
+        double annualTax = BASE_FEE; // Base annual tax fee
 
-        double annualTax = ANNUAL_TAX_BASE_FEE;
-        switch (fuelType) {
+        switch (fuelTypes[carId]) {
             case FUEL_TYPE_HYBRID -> annualTax += HYBRID_ADJUSTMENT;
             case FUEL_TYPE_PETROL -> annualTax += PETROL_ADJUSTMENT;
         }
         return annualTax;
     }
 
-    private double adjustAnnualTaxForEmissions(double annualTax, double emissions) {
-        final double EMISSION_MULTIPLIER = 500.0;
-        return annualTax + emissions * EMISSION_MULTIPLIER;
-    }
-
-    private double adjustAnnualTaxForModelYear(double annualTax, int baseYear, int modelYear) {
-        final double MODEL_YEAR_MULTIPLIER = 2.0;
-        int yearDifference = baseYear - modelYear;
-        return annualTax - yearDifference * MODEL_YEAR_MULTIPLIER;
-    }
-
-    private double adjustMinimumAnnualTax(double annualTax) {
-        if (annualTax < ANNUAL_TAX_BASE_FEE) {
-            return ANNUAL_TAX_BASE_FEE;
-        }
+    private double getEmissionsAdjustedAnnualTax(int carId, double annualTax) {
+        final double EMISSION_MULTIPLIER = 500.0; // For each 0.01 in emissions, increase tax by €5
+        double emissionAdjustment = emissions[carId] * EMISSION_MULTIPLIER; // For each 0.01 in emissions, increase tax by €5
+        annualTax += emissionAdjustment;
         return annualTax;
     }
 
+    private double getModelYearAdjustedAnnualTax(int carId, int baseYear, double annualTax) {
+        final double MODEL_YEAR_MULTIPLIER = 2.0; // Reduce €2 for each year older than the base year
+        int yearDifference = baseYear - modelYears[carId];
+        double modelYearAdjustment = yearDifference * MODEL_YEAR_MULTIPLIER; // Reduce €2 for each year older than the base year
+        annualTax -= modelYearAdjustment;
+        return annualTax;
+    }
+
+    private static double getMinimumFeeAdjustedAnnualTax(double annualTax) {
+        boolean annualTaxIsBelowBaseFee = annualTax < BASE_FEE;
+        if (annualTaxIsBelowBaseFee) {
+            annualTax = BASE_FEE;
+        }
+        return annualTax;
+    }
 
     private String getCarInfo(String manufacturer, String carModel, int modelYear) {
         return "Make: " + manufacturer + "\n" +
@@ -226,7 +268,8 @@ public class CarController {
     }
 
     private String getCarInfo(int carId) throws Exception {
-        if (carId < 0 || carId >= carModels.length) {
+        boolean carIdExists = carId >= 0 && carId < carModels.length;
+        if (!carIdExists) {
             throw new Exception("No car with id " + carId + " exists");
         }
         return "Make: " + manufacturers[carId] + "\n" +
