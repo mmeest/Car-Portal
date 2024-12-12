@@ -9,28 +9,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import static ee.bcs.carportal.persistence.FuelType.*;
+
 @RequestMapping("/api/v1")
 @RestController
 public class CarController {
 
-    private final String[] carModels = {"Model 3", "Civic", "Camry", "F-150", "Prius"};
-    private final String[] manufacturers = {"Tesla", "Honda", "Toyota", "Ford", "Toyota"};
-    private final int[] modelYears = {2020, 2021, 2022, 2023, 2020};
-    private final String[] fuelTypes = {"Electric", "Petrol", "Petrol", "Petrol", "Hybrid"};
-    private final double[] emissions = {0.0, 0.05, 0.04, 0.1, 0.03};
-    private final int[] prices = {44000, 25000, 28000, 45000, 30000};
-
-    // Fuel type constants
-    private static final String FUEL_TYPE_ELECTRIC = "Electric";
-    private static final String FUEL_TYPE_HYBRID = "Hybrid";
-    private static final String FUEL_TYPE_PETROL = "Petrol";
     private static final double BASE_FEE = 50.0;
 
     public static List<Car> cars = createCars();
 
     public static List<Car> createCars() {
         List<Car> cars = new ArrayList<>();
-        cars.add(new Car("Model 3", "Tesla", 2020, FuelType.ELECTRIC, 0.0, 44000));
+        cars.add(new Car("Model 3", "Tesla", 2020, ELECTRIC, 0.0, 44000));
         cars.add(new Car("Civic", "Honda", 2021, FuelType.PETROL, 0.05, 25000));
         cars.add(new Car("Camry", "Toyota", 2022, FuelType.PETROL, 0.04, 28000));
         cars.add(new Car("F-150", "Ford", 2023, FuelType.PETROL, 0.1, 45000));
@@ -44,48 +35,35 @@ public class CarController {
 
     @GetMapping("/cars/all")
     @Tag(name = "Mandatory")
-    public String getAllCars() {
-        int carCounter = 0;
-        StringBuilder sb = new StringBuilder("All car models: ");
-        for (String model : carModels) {
-            sb.append(model).append(", ");
-            carCounter++;
-        }
-        return sb.substring(0, sb.length() - 2) + "; (number of car models: " + carCounter + ")";
+    public List<Car> getAllCars() {
+        return cars;
     }
 
     @GetMapping("/cars/price-range")
     @Tag(name = "Mandatory")
-    public String getCarsInPriceRange(@RequestParam int from, @RequestParam int to) {
-        int carCounter = 0;
-        StringBuilder sb = new StringBuilder("Cars in price range €" + from + " - €" + to + ":");
-        for (int carId = 0; carId < prices.length; carId++) {
-            boolean isWithinPriceRange = prices[carId] >= from && prices[carId] <= to;
+    public List<Car> getCarsInPriceRange(@RequestParam int from, @RequestParam int to) {
+        List<Car> carsInPriceRange = new ArrayList<>();
+        for (Car car : cars) {
+            boolean isWithinPriceRange = car.getPrice() >= from && car.getPrice() <= to;
             if (isWithinPriceRange) {
-                sb.append("\n\n").append(getCarDetailedInfoByCarId(carId));
-                carCounter++;
+                carsInPriceRange.add(car);
             }
         }
-        if (carCounter == 0) {
-            return "No cars found in price range €" + from + " - €" + to;
-        }
-        return sb + "\n\nNumber of car models: " + carCounter;
+        return carsInPriceRange;
     }
 
     @GetMapping("/cars/green/price-range")
     @Tag(name = "Mandatory")
-    public String getGreenCarsInPriceRange(@RequestParam int from, @RequestParam int to) {
-        int carCounter = 0;
-        StringBuilder sb = new StringBuilder("Green cars in price range €" + from + " - €" + to + ": ");
-        for (int carId = 0; carId < prices.length; carId++) {
-            boolean isWithinPriceRange = prices[carId] >= from && prices[carId] <= to;
-            boolean isGreenCar = fuelTypes[carId].equals(FUEL_TYPE_ELECTRIC) || fuelTypes[carId].equals(FUEL_TYPE_HYBRID);
+    public List<Car> getGreenCarsInPriceRange(@RequestParam int from, @RequestParam int to) {
+        List<Car> greenCarsInPriceRange = new ArrayList<>();
+        for (Car car : cars) {
+            boolean isWithinPriceRange = car.getPrice()  >= from && car.getPrice()  <= to;
+            boolean isGreenCar = car.getFuelType().equals(ELECTRIC) || car.getFuelType().equals(HYBRID);
             if (isWithinPriceRange && isGreenCar) {
-                sb.append(carModels[carId]).append(" (").append(fuelTypes[carId]).append("), ");
-                carCounter++;
+                greenCarsInPriceRange.add(car);
             }
         }
-        return sb.substring(0, sb.length() - 2) + "; (number of car models: " + carCounter + ")";
+        return greenCarsInPriceRange;
     }
 
     @GetMapping("/car/{carId}/registration-tax")
@@ -93,98 +71,76 @@ public class CarController {
     public String getCarRegistrationTaxByCarId(@PathVariable int carId, @RequestParam int baseYear) {
         double registrationTaxRate = calculateRegistrationTaxRate(carId, baseYear);
         double taxAmount = calculateTaxAmount(carId, registrationTaxRate);
-        return "The registration tax rate for " + modelYears[carId] + " " + manufacturers[carId] + " "
-                + carModels[carId] + " is " + registrationTaxRate + "% with total tax amount €" + String.format("%.0f", taxAmount);
+        return "The registration tax rate for " + cars.get(carId).getModelYear() + " " + cars.get(carId).getManufacturer() + " "
+                + cars.get(carId).getCarModel() + " is " + registrationTaxRate + "% with total tax amount €" + String.format("%.0f", taxAmount);
     }
 
     @GetMapping("/car/{carId}/annual-tax")
     @Tag(name = "Mandatory")
     public String getCarAnnualTaxByCarId(@PathVariable int carId, @RequestParam int baseYear) {
         double annualTax = calculateAnnualTax(carId, baseYear);
-        return String.format("The annual tax for %d %s %s is €%.0f", modelYears[carId], manufacturers[carId], carModels[carId], annualTax);
+        return String.format("The annual tax for %d %s %s is €%.0f", cars.get(carId).getModelYear(), cars.get(carId).getManufacturer(), cars.get(carId).getCarModel(), annualTax);
     }
 
     @GetMapping("/car/random/basic-info")
     @Tag(name = "Mandatory")
-    public String getRandomCarBasicInfo() {
-        int carId = new Random().nextInt(0, 5);
-        return getCarInfo(manufacturers[carId], carModels[carId], modelYears[carId]);
+    public Car getRandomCarBasicInfo() {
+        int carId = new Random().nextInt(cars.size());
+        return cars.get(carId);
     }
 
     @GetMapping("/car/random/detailed-info")
     @Tag(name = "Mandatory")
-    public String getRandomCarDetailedInfo() {
-        int carId = new Random().nextInt(0, 5);
-        try {
-            return getCarInfo(carId);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
+    public Car getRandomCarDetailedInfo() {
+        int carId = new Random().nextInt(cars.size());
+        return cars.get(carId);
     }
 
     @GetMapping("/car/{carId}/basic-info")
     @Tag(name = "Mandatory")
-    public String getCarBasicInfoByCarId(@PathVariable int carId) {
-        try {
-            return getCarInfo(manufacturers[carId], carModels[carId], modelYears[carId]);
-        } catch (IndexOutOfBoundsException e) {
-            return "No car with id " + carId + " exists";
-        }
+    public Car getCarBasicInfoByCarId(@PathVariable int carId) {
+        return cars.get(carId);
     }
 
     @GetMapping("/car/{carId}/detailed-info")
     @Tag(name = "Mandatory")
-    public String getCarDetailedInfoByCarId(@PathVariable int carId) {
-        try {
-            return getCarInfo(carId);
-        } catch (Exception e) {
-            return e.getMessage();
-        }
+    public Car getCarDetailedInfoByCarId(@PathVariable int carId) {
+        return cars.get(carId);
     }
 
     // Extra practice endpoints go to below
     // Please use @Tag annotation as below with all extra practice endpoints:
     // @Tag(name = "Extra practice")
 
-
     @GetMapping("/cars/registration-tax-range")
     @Tag(name = "Extra practice")
-    public String getCarsByRegistrationTaxRange(@RequestParam int from, @RequestParam int to, @RequestParam int baseYear) {
-        int carCounter = 0;
-        StringBuilder sb = new StringBuilder("Cars in tax range €" + from + " - €" + to + ":");
-        for (int carId = 0; carId < prices.length; carId++) {
+    public List<Car> getCarsByRegistrationTaxRange(@RequestParam int from, @RequestParam int to, @RequestParam int baseYear) {
+        int carId = 0;
+        List<Car> carsInRegistrationTaxRange = new ArrayList<>();
+        for (Car car : cars) {
             double taxRate = calculateRegistrationTaxRate(carId, baseYear);
             double taxAmount = calculateTaxAmount(carId, taxRate);
             if (taxAmount >= from && taxAmount <= to) {
-                sb.append("\n\n").append(getCarInfo(manufacturers[carId], carModels[carId], modelYears[carId]));
-                sb.append("\nTax rate: ").append(taxRate).append("%");
-                sb.append("\nTax amount: €").append(String.format("%.0f", taxAmount));
-                carCounter++;
+                carsInRegistrationTaxRange.add(car);
             }
+            carId++;
         }
-        if (carCounter == 0) {
-            return "No cars found in tax range €" + from + " - €" + to;
-        }
-        return sb + "\n\nNumber of car models: " + carCounter;
+        return carsInRegistrationTaxRange;
     }
 
     @GetMapping("/cars/annual-tax-range")
     @Tag(name = "Extra practice")
-    public String getCarsByAnnualTaxRange(@RequestParam int from, @RequestParam int to, @RequestParam int baseYear) {
-        int carCounter = 0;
-        StringBuilder sb = new StringBuilder("Cars in tax range €" + from + " - €" + to + ":");
-        for (int carId = 0; carId < prices.length; carId++) {
-            double annualTax = calculateAnnualTax(carId, baseYear);
+    public List<Car> getCarsByAnnualTaxRange(@RequestParam int from, @RequestParam int to, @RequestParam int baseYear) {
+        int carId = 0;
+        List<Car> carsInAnnualTaxRange = new ArrayList<>();
+        double annualTax = calculateAnnualTax(carId, baseYear);
+        for (Car car : cars) {
             if (annualTax >= from && annualTax <= to) {
-                sb.append("\n\n").append(getCarInfo(manufacturers[carId], carModels[carId], modelYears[carId]));
-                sb.append("\nTax amount: €").append(String.format("%.0f", annualTax));
-                carCounter++;
+                carsInAnnualTaxRange.add(car);
             }
+            carId++;
         }
-        if (carCounter == 0) {
-            return "No cars found in tax range €" + from + " - €" + to;
-        }
-        return sb + "\n\nNumber of car models: " + carCounter;
+        return carsInAnnualTaxRange;
     }
 
 
@@ -203,17 +159,17 @@ public class CarController {
         final double PETROL_ADJUSTMENT = 1.5;
         double taxRate = BASE_TAX_RATE; // Base tax rate of 5%
 
-        switch (fuelTypes[carId]) {
-            case FUEL_TYPE_ELECTRIC -> taxRate += ELECTRIC_ADJUSTMENT;
-            case FUEL_TYPE_HYBRID -> taxRate += HYBRID_ADJUSTMENT;
-            case FUEL_TYPE_PETROL -> taxRate += PETROL_ADJUSTMENT;
+        switch (cars.get(carId).getFuelType()) {
+            case ELECTRIC -> taxRate += ELECTRIC_ADJUSTMENT;
+            case HYBRID -> taxRate += HYBRID_ADJUSTMENT;
+            case PETROL -> taxRate += PETROL_ADJUSTMENT;
         }
         return taxRate;
     }
 
     private double getEmissionsAdjustedRegistrationTaxRate(int carId, double taxRate) {
         final double EMISSION_MULTIPLIER = 10.0; // For each 0.01 in emissions, increase tax rate by 0.1%
-        double emissionAdjustment = emissions[carId] * EMISSION_MULTIPLIER; // For each 0.01 in emissions, increase tax rate by 0.1%
+        double emissionAdjustment = cars.get(carId).getEmissions() * EMISSION_MULTIPLIER; // For each 0.01 in emissions, increase tax rate by 0.1%
         taxRate += emissionAdjustment;
         return taxRate;
     }
@@ -221,7 +177,7 @@ public class CarController {
 
     private double getModelYearAdjustedRegistrationTaxRate(int carId, int baseYear, double taxRate) {
         final double MODEL_YEAR_MULTIPLIER = 0.2; // Reduce 0.2% for each year older than the base year
-        int yearDifference = baseYear - modelYears[carId];
+        int yearDifference = baseYear - cars.get(carId).getModelYear();
         double modelYearAdjustment = yearDifference * MODEL_YEAR_MULTIPLIER; // Reduce 0.2% for each year older than the base year
         taxRate -= modelYearAdjustment;
         return taxRate;
@@ -232,7 +188,7 @@ public class CarController {
     }
 
     private double calculateTaxAmount(int carId, double registrationTaxRate) {
-        return prices[carId] * (registrationTaxRate / 100);
+        return cars.get(carId).getPrice() * (registrationTaxRate / 100);
     }
 
     private double calculateAnnualTax(int carId, int baseYear) {
@@ -247,23 +203,23 @@ public class CarController {
         final double PETROL_ADJUSTMENT = 30.0;
         double annualTax = BASE_FEE; // Base annual tax fee
 
-        switch (fuelTypes[carId]) {
-            case FUEL_TYPE_HYBRID -> annualTax += HYBRID_ADJUSTMENT;
-            case FUEL_TYPE_PETROL -> annualTax += PETROL_ADJUSTMENT;
+        switch (cars.get(carId).getFuelType()) {
+            case HYBRID -> annualTax += HYBRID_ADJUSTMENT;
+            case PETROL -> annualTax += PETROL_ADJUSTMENT;
         }
         return annualTax;
     }
 
     private double getEmissionsAdjustedAnnualTax(int carId, double annualTax) {
         final double EMISSION_MULTIPLIER = 500.0; // For each 0.01 in emissions, increase tax by €5
-        double emissionAdjustment = emissions[carId] * EMISSION_MULTIPLIER; // For each 0.01 in emissions, increase tax by €5
+        double emissionAdjustment = cars.get(carId).getEmissions() * EMISSION_MULTIPLIER; // For each 0.01 in emissions, increase tax by €5
         annualTax += emissionAdjustment;
         return annualTax;
     }
 
     private double getModelYearAdjustedAnnualTax(int carId, int baseYear, double annualTax) {
         final double MODEL_YEAR_MULTIPLIER = 2.0; // Reduce €2 for each year older than the base year
-        int yearDifference = baseYear - modelYears[carId];
+        int yearDifference = baseYear - cars.get(carId).getModelYear();
         double modelYearAdjustment = yearDifference * MODEL_YEAR_MULTIPLIER; // Reduce €2 for each year older than the base year
         annualTax -= modelYearAdjustment;
         return annualTax;
@@ -277,22 +233,5 @@ public class CarController {
         return annualTax;
     }
 
-    private String getCarInfo(String manufacturer, String carModel, int modelYear) {
-        return "Make: " + manufacturer + "\n" +
-                "Model: " + carModel + "\n" +
-                "Year: " + modelYear;
-    }
-
-    private String getCarInfo(int carId) throws Exception {
-        boolean carIdExists = carId >= 0 && carId < carModels.length;
-        if (!carIdExists) {
-            throw new Exception("No car with id " + carId + " exists");
-        }
-        return "Make: " + manufacturers[carId] + "\n" +
-                "Model: " + carModels[carId] + "\n" +
-                "Fuel type: " + fuelTypes[carId] + "\n" +
-                "Emission: " + emissions[carId] + "\n" +
-                "Price: €" + prices[carId];
-    }
 
 }
