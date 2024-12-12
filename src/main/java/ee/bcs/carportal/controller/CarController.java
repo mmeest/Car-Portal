@@ -1,8 +1,12 @@
 package ee.bcs.carportal.controller;
 
+import ee.bcs.carportal.persistence.Car;
+import ee.bcs.carportal.persistence.FuelType;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @RequestMapping("/api/v1")
@@ -21,6 +25,18 @@ public class CarController {
     private static final String FUEL_TYPE_HYBRID = "Hybrid";
     private static final String FUEL_TYPE_PETROL = "Petrol";
     private static final double BASE_FEE = 50.0;
+
+    public static List<Car> cars = createCars();
+
+    public static List<Car> createCars() {
+        List<Car> cars = new ArrayList<>();
+        cars.add(new Car("Model 3", "Tesla", 2020, FuelType.ELECTRIC, 0.0, 44000));
+        cars.add(new Car("Civic", "Honda", 2021, FuelType.PETROL, 0.05, 25000));
+        cars.add(new Car("Camry", "Toyota", 2022, FuelType.PETROL, 0.04, 28000));
+        cars.add(new Car("F-150", "Ford", 2023, FuelType.PETROL, 0.1, 45000));
+        cars.add(new Car("Prius", "Toyota", 2020, FuelType.HYBRID, 0.03, 30000));
+        return cars;
+    }
 
     // Mandatory endpoints go to below
     // Please use @Tag annotation as below with all mandatory endpoints:
