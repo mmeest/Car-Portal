@@ -98,6 +98,10 @@ public class CarService {
         car.setPrice(price);
     }
 
+    public void deleteCar(int carId) {
+        cars.remove(carId);
+    }
+
     public List<Car> getCarsByRegistrationTaxRange(int from, int to, int baseYear) {
         int carId = 0;
         List<Car> carsInRegistrationTaxRange = new ArrayList<>();

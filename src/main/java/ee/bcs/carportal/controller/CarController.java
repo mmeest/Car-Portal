@@ -93,6 +93,12 @@ public class CarController {
         carService.updateCarPrice(carId, price);
     }
 
+    @DeleteMapping("/car/{carId}")
+    @Tag(name = "Mandatory")
+    public void deleteCar(@PathVariable int carId) {
+        carService.deleteCar(carId);
+    }
+
     // Extra practice endpoints go to below
     // Please use @Tag annotation as below with all extra practice endpoints:
     // @Tag(name = "Extra practice")
