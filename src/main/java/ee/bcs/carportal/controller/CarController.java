@@ -21,6 +21,12 @@ public class CarController {
     // Please use @Tag annotation as below with all mandatory endpoints:
     // @Tag(name = "Mandatory")
 
+    @PostMapping("/car")
+    @Tag(name = "Mandatory")
+    public void addCar(@RequestBody Car car) {
+        carService.addCar(car);
+    }
+
     @GetMapping("/cars/all")
     @Tag(name = "Mandatory")
     public List<Car> getAllCars() {

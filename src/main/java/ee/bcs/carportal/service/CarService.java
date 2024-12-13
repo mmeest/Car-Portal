@@ -28,6 +28,10 @@ public class CarService {
         return cars;
     }
 
+    public void addCar(Car car) {
+        cars.add(car);
+    }
+
     public List<Car> getAllCars() {
         return cars;
     }
