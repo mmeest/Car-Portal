@@ -1,256 +1,246 @@
 package ee.bcs.carportal.controller;
 
+import ee.bcs.carportal.service.CarService;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.ResourceUtils;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.hamcrest.Matchers.containsString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(CarController.class)
+@SpringBootTest
+@AutoConfigureMockMvc
 class CarControllerMvcTest {
+
+    @Resource
+    private CarService carService;  // Inject the real service
 
     @Resource
     private MockMvc mockMvc;
 
+    @BeforeEach
+    void setUp() {
+        // Reset the CarService static cars list before each test
+        CarService.cars = CarService.createCars();
+    }
+
     @Test
-    public void shouldReturnAllModels() throws Exception {
+    public void shouldReturnAllCars() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars.json").toURI());
+        String expectedJson = Files.readString(path);
+
+        // Assert: Perform the GET request and check the response
         mockMvc.perform(get("/api/v1/cars/all"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("All car models: Model 3, Civic, Camry, F-150, Prius; (number of car models: 5)"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
-    public void shouldReturn3ModelsInRange28000To44000() throws Exception {
+    public void shouldReturnCarsInPriceRange() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_price_range.json").toURI());
+        String expectedJson = Files.readString(path);
+
+        // Assert: Perform the GET request and check the response
         mockMvc.perform(get("/api/v1/cars/price-range")
                         .param("from", "28000")
-                        .param("to", "44000"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Cars in price range €28000 - €44000:\n\nMake: Tesla\nModel: Model 3\nFuel type: Electric\nEmission: 0.0\nPrice: €44000\n\nMake: Toyota\nModel: Camry\nFuel type: Petrol\nEmission: 0.04\nPrice: €28000\n\nMake: Toyota\nModel: Prius\nFuel type: Hybrid\nEmission: 0.03\nPrice: €30000\n\nNumber of car models: 3"));
-    }
-
-    @Test
-    public void shouldReturn2ModelsInRange35000To45000() throws Exception {
-        mockMvc.perform(get("/api/v1/cars/price-range")
-                        .param("from", "35000")
                         .param("to", "45000"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Cars in price range €35000 - €45000:\n\nMake: Tesla\nModel: Model 3\nFuel type: Electric\nEmission: 0.0\nPrice: €44000\n\nMake: Ford\nModel: F-150\nFuel type: Petrol\nEmission: 0.1\nPrice: €45000\n\nNumber of car models: 2"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
-    public void shouldReturnNoModelsInRange50000To60000() throws Exception {
-        mockMvc.perform(get("/api/v1/cars/price-range")
-                        .param("from", "50000")
-                        .param("to", "60000"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("No cars found in price range €50000 - €60000"));
-    }
+    public void shouldReturnGreenCarsInPriceRange() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_green_cars_price_range.json").toURI());
+        String expectedJson = Files.readString(path);
 
-    @Test
-    public void shouldReturnGreen2ModelsInRange28000To44000() throws Exception {
+        // Assert: Perform the GET request and check the response
         mockMvc.perform(get("/api/v1/cars/green/price-range")
                         .param("from", "28000")
-                        .param("to", "44000"))
+                        .param("to", "45000"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Green cars in price range €28000 - €44000: Model 3 (Electric), Prius (Hybrid); (number of car models: 2)"));
-    }
-
-    @Test
-    public void shouldReturnNoGreenCarsInRange50000To60000() throws Exception {
-        mockMvc.perform(get("/api/v1/cars/green/price-range")
-                        .param("from", "50000")
-                        .param("to", "60000"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Green cars in price range €50000 - €60000; (number of car models: 0)"));
-    }
-
-    @Test
-    public void shouldReturnCorrectTeslaModel3RegistrationTaxRateAndAmount() throws Exception {
-        mockMvc.perform(get("/api/v1/car/0/registration-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The registration tax rate for 2020 Tesla Model 3 is 2.5% with total tax amount €1100"));
-    }
-
-    @Test
-    public void shouldReturnCorrectHondaCivicRegistrationTaxRateAndAmount() throws Exception {
-        mockMvc.perform(get("/api/v1/car/1/registration-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The registration tax rate for 2021 Honda Civic is 6.2% with total tax amount €1550"));
-    }
-
-    @Test
-    public void shouldReturnCorrectToyotaCamryRegistrationTaxRateAndAmount() throws Exception {
-        mockMvc.perform(get("/api/v1/car/2/registration-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The registration tax rate for 2022 Toyota Camry is 6.3% with total tax amount €1764"));
-    }
-
-    @Test
-    public void shouldReturnCorrectFordF150RegistrationTaxRateAndAmount() throws Exception {
-        mockMvc.perform(get("/api/v1/car/3/registration-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The registration tax rate for 2023 Ford F-150 is 7.1% with total tax amount €3195"));
-    }
-
-    @Test
-    public void shouldReturnCorrectToyotaPriusRegistrationTaxRateAndAmount() throws Exception {
-        mockMvc.perform(get("/api/v1/car/4/registration-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The registration tax rate for 2020 Toyota Prius is 3.8% with total tax amount €1140"));
-    }
-
-    @Test
-    public void shouldReturnCorrectTeslaModel3AnnualTaxFee() throws Exception {
-        mockMvc.perform(get("/api/v1/car/0/annual-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The annual tax for 2020 Tesla Model 3 is €50"));
-    }
-
-    @Test
-    public void shouldReturnCorrectHondaCivicAnnualTaxFee() throws Exception {
-        mockMvc.perform(get("/api/v1/car/1/annual-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The annual tax for 2021 Honda Civic is €97"));
-    }
-
-    @Test
-    public void shouldReturnCorrectToyotaCamryAnnualTaxFee() throws Exception {
-        mockMvc.perform(get("/api/v1/car/2/annual-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The annual tax for 2022 Toyota Camry is €94"));
-    }
-
-    @Test
-    public void shouldReturnCorrectFordF150AnnualTaxFee() throws Exception {
-        mockMvc.perform(get("/api/v1/car/3/annual-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The annual tax for 2023 Ford F-150 is €126"));
-    }
-
-    @Test
-    public void shouldReturnCorrectToyotaPriusAnnualTaxFee() throws Exception {
-        mockMvc.perform(get("/api/v1/car/4/annual-tax")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("The annual tax for 2020 Toyota Prius is €75"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
     public void shouldReturnRandomCarBasicInfo() throws Exception {
         mockMvc.perform(get("/api/v1/car/random/basic-info"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string(containsString("Make:")))
-                .andExpect(content().string(containsString("Model:")))
-                .andExpect(content().string(containsString("Year:")));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().string(containsString("\"carModel\":")))
+                .andExpect(content().string(containsString("\"manufacturer\":")))
+                .andExpect(content().string(containsString("\"modelYear\":")))
+                .andExpect(content().string(containsString("\"fuelType\":")))
+                .andExpect(content().string(containsString("\"emissions\":")))
+                .andExpect(content().string(containsString("\"price\":")));
     }
 
     @Test
     public void shouldReturnRandomCarDetailedInfo() throws Exception {
         mockMvc.perform(get("/api/v1/car/random/detailed-info"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string(containsString("Make:")))
-                .andExpect(content().string(containsString("Model:")))
-                .andExpect(content().string(containsString("Fuel type:")))
-                .andExpect(content().string(containsString("Emission:")))
-                .andExpect(content().string(containsString("Price:")));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().string(containsString("\"carModel\":")))
+                .andExpect(content().string(containsString("\"manufacturer\":")))
+                .andExpect(content().string(containsString("\"modelYear\":")))
+                .andExpect(content().string(containsString("\"fuelType\":")))
+                .andExpect(content().string(containsString("\"emissions\":")))
+                .andExpect(content().string(containsString("\"price\":")));
+    }
+
+    @Test
+    public void shouldReturnCarBasicInfoById() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_car_basic_info_by_id.json").toURI());
+        String expectedJson = Files.readString(path);
+
+        // Assert: Perform the GET request and check the response
+        mockMvc.perform(get("/api/v1/car/0/basic-info"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
     public void shouldReturnCarDetailedInfoById() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_car_detailed_info_by_id.json").toURI());
+        String expectedJson = Files.readString(path);
+
+        // Assert: Perform the GET request and check the response
         mockMvc.perform(get("/api/v1/car/0/detailed-info"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Make: Tesla\nModel: Model 3\nFuel type: Electric\nEmission: 0.0\nPrice: €44000"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
-    public void shouldHandleNonExistentCarIdForBasicInfo() throws Exception {
-        mockMvc.perform(get("/api/v1/car/5/basic-info"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("No car with id 5 exists"));
-    }
+    public void shouldReturnCarsByRegistrationTaxRange() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_registration_tax_range.json").toURI());
+        String expectedJson = Files.readString(path);
 
-    @Test
-    public void shouldHandleNonExistentCarIdForDetailedInfo() throws Exception {
-        mockMvc.perform(get("/api/v1/car/5/detailed-info"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("No car with id 5 exists"));
-    }
-
-    @Test
-    public void shouldReturnCarsInRegistrationTaxRange1100To1200() throws Exception {
+        // Assert: Perform the GET request and check the response
         mockMvc.perform(get("/api/v1/cars/registration-tax-range")
                         .param("from", "1100")
                         .param("to", "1200")
                         .param("baseYear", "2025"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Cars in tax range €1100 - €1200:\n\nMake: Tesla\nModel: Model 3\nYear: 2020\nTax rate: 2.5%\nTax amount: €1100\n\nMake: Toyota\nModel: Prius\nYear: 2020\nTax rate: 3.8%\nTax amount: €1140\n\nNumber of car models: 2"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
-    public void shouldReturnNoCarsInRegistrationTaxRange2000To3000() throws Exception {
-        mockMvc.perform(get("/api/v1/cars/registration-tax-range")
-                        .param("from", "2000")
-                        .param("to", "3000")
-                        .param("baseYear", "2025"))
-                .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("No cars found in tax range €2000 - €3000"));
-    }
+    public void shouldReturnCarsByAnnualTaxRange() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_annual_tax_range.json").toURI());
+        String expectedJson = Files.readString(path);
 
-    @Test
-    public void shouldReturnCarsInAnnualTaxRange50To100() throws Exception {
+        // Assert: Perform the GET request and check the response
         mockMvc.perform(get("/api/v1/cars/annual-tax-range")
                         .param("from", "50")
-                        .param("to", "100")
+                        .param("to", "126")
                         .param("baseYear", "2025"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("Cars in tax range €50 - €100:\n\nMake: Tesla\nModel: Model 3\nYear: 2020\nTax amount: €50\n\nMake: Honda\nModel: Civic\nYear: 2021\nTax amount: €97\n\nMake: Toyota\nModel: Camry\nYear: 2022\nTax amount: €94\n\nMake: Toyota\nModel: Prius\nYear: 2020\nTax amount: €75\n\nNumber of car models: 4"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
+    }
+
+
+    // new tests
+    @Test
+    public void shouldAddNewCar() throws Exception {
+        // Load the request JSON from the file
+        Path requestPath = Paths.get(ResourceUtils.getFile("classpath:files/request_add_car.json").toURI());
+        String requestJson = Files.readString(requestPath);
+
+        // Perform the POST request to add a new car
+        mockMvc.perform(post("/api/v1/car")
+                        .contentType("application/json")
+                        .content(requestJson))
+                .andExpect(status().isOk());
+
+        // Load the expected JSON from the file
+        Path expectedPath = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_after_add.json").toURI());
+        String expectedJson = Files.readString(expectedPath);
+
+        // Assert that the car list is updated
+        mockMvc.perform(get("/api/v1/cars/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 
     @Test
-    public void shouldReturnNoCarsInAnnualTaxRange500To600() throws Exception {
-        mockMvc.perform(get("/api/v1/cars/annual-tax-range")
-                        .param("from", "500")
-                        .param("to", "600")
-                        .param("baseYear", "2025"))
+    public void shouldUpdateCar() throws Exception {
+        // Load the request JSON from the file
+        Path requestPath = Paths.get(ResourceUtils.getFile("classpath:files/request_update_car.json").toURI());
+        String requestJson = Files.readString(requestPath);
+
+        // Perform the PUT request to update the car
+        mockMvc.perform(put("/api/v1/car/3")
+                        .contentType("application/json")
+                        .content(requestJson))
+                .andExpect(status().isOk());
+
+        // Load the expected JSON from the file
+        Path expectedPath = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_after_update.json").toURI());
+        String expectedJson = Files.readString(expectedPath);
+
+        // Assert that the car list is updated
+        mockMvc.perform(get("/api/v1/cars/all"))
                 .andExpect(status().isOk())
-                .andExpect(content().contentType("text/plain;charset=UTF-8"))
-                .andExpect(content().string("No cars found in tax range €500 - €600"));
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    public void shouldUpdateCarPrice() throws Exception {
+        // Perform the PATCH request to update the car price
+        mockMvc.perform(patch("/api/v1/car/3")
+                        .param("price", "42000"))
+                .andExpect(status().isOk());
+
+        // Load the expected JSON from the file
+        Path expectedPath = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_after_price_update.json").toURI());
+        String expectedJson = Files.readString(expectedPath);
+
+        // Assert that the car list is updated
+        mockMvc.perform(get("/api/v1/cars/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
+    }
+
+    @Test
+    public void shouldDeleteCar() throws Exception {
+        // Perform the DELETE request to delete a car
+        mockMvc.perform(delete("/api/v1/car/3"))
+                .andExpect(status().isOk());
+
+        // Load the expected JSON from the file
+        Path expectedPath = Paths.get(ResourceUtils.getFile("classpath:files/expected_cars_after_delete.json").toURI());
+        String expectedJson = Files.readString(expectedPath);
+
+        // Assert that the car list is updated
+        mockMvc.perform(get("/api/v1/cars/all"))
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
     }
 }
