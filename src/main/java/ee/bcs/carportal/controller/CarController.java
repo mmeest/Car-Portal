@@ -81,6 +81,18 @@ public class CarController {
         return carService.getCarDetailedInfoByCarId(carId);
     }
 
+    @PutMapping("/car/{carId}")
+    @Tag(name = "Mandatory")
+    public void updateCar(@PathVariable int carId, @RequestBody Car car) {
+        carService.updateCar(carId, car);
+    }
+
+    @PatchMapping("/car/{carId}")
+    @Tag(name = "Mandatory")
+    public void updateCarPrice(@PathVariable int carId, @RequestParam int price) {
+        carService.updateCarPrice(carId, price);
+    }
+
     // Extra practice endpoints go to below
     // Please use @Tag annotation as below with all extra practice endpoints:
     // @Tag(name = "Extra practice")

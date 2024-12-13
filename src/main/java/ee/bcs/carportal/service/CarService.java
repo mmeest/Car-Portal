@@ -89,6 +89,15 @@ public class CarService {
         return cars.get(carId);
     }
 
+    public void updateCar(int carId, Car car) {
+        cars.set(carId, car);
+    }
+
+    public void updateCarPrice(int carId, int price) {
+        Car car = cars.get(carId);
+        car.setPrice(price);
+    }
+
     public List<Car> getCarsByRegistrationTaxRange(int from, int to, int baseYear) {
         int carId = 0;
         List<Car> carsInRegistrationTaxRange = new ArrayList<>();
