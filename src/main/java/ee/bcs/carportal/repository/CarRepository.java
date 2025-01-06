@@ -1,6 +1,6 @@
 package ee.bcs.carportal.repository;
 
-import ee.bcs.carportal.persistence.Car;
+import ee.bcs.carportal.persistence.car.Car;
 
 import java.util.List;
 

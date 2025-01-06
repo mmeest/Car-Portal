@@ -1,6 +1,6 @@
 package ee.bcs.carportal.repository;
 
-import ee.bcs.carportal.persistence.Car;
+import ee.bcs.carportal.persistence.car.Car;
 import ee.bcs.carportal.persistence.FuelType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
