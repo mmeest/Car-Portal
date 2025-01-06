@@ -1,5 +1,6 @@
 [
   {
+    "id": 1,
     "carModel": "Model 3",
     "manufacturer": "Tesla",
     "modelYear": 2020,
@@ -8,6 +9,7 @@
     "price": 44000
   },
   {
+    "id": 2,
     "carModel": "Civic",
     "manufacturer": "Honda",
     "modelYear": 2021,
@@ -16,6 +18,7 @@
     "price": 25000
   },
   {
+    "id": 3,
     "carModel": "Camry",
     "manufacturer": "Toyota",
     "modelYear": 2022,
@@ -24,6 +27,7 @@
     "price": 28000
   },
   {
+    "id": 4,
     "carModel": "F-150",
     "manufacturer": "Ford",
     "modelYear": 2023,
@@ -32,6 +36,7 @@
     "price": 45000
   },
   {
+    "id": 5,
     "carModel": "Prius",
     "manufacturer": "Toyota",
     "modelYear": 2020,

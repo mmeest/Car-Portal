@@ -1,6 +1,7 @@
 package ee.bcs.carportal.controller;
 
-import ee.bcs.carportal.service.CarService;
+
+import ee.bcs.carportal.repository.CarRepositoryImpl;
 import jakarta.annotation.Resource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,15 +24,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class CarControllerMvcTest {
 
     @Resource
-    private CarService carService;  // Inject the real service
+    private CarRepositoryImpl carRepository;  // Inject the real service
 
     @Resource
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        // Reset the CarService static cars list before each test
-        CarService.cars = CarService.createCars();
+        // Reset the cars data
+        carRepository.resetData();
     }
 
     @Test
@@ -110,7 +111,7 @@ class CarControllerMvcTest {
         String expectedJson = Files.readString(path);
 
         // Assert: Perform the GET request and check the response
-        mockMvc.perform(get("/api/v1/car/0/basic-info"))
+        mockMvc.perform(get("/api/v1/car/1/basic-info"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(content().json(expectedJson));
@@ -123,7 +124,7 @@ class CarControllerMvcTest {
         String expectedJson = Files.readString(path);
 
         // Assert: Perform the GET request and check the response
-        mockMvc.perform(get("/api/v1/car/0/detailed-info"))
+        mockMvc.perform(get("/api/v1/car/1/detailed-info"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(content().json(expectedJson));
@@ -136,7 +137,7 @@ class CarControllerMvcTest {
         String expectedJson = Files.readString(path);
 
         // Assert: Perform the GET request and check the response
-        mockMvc.perform(get("/api/v1/cars/registration-tax-range")
+        mockMvc.perform(get("/api/v1/tax/cars/registration-tax-range")
                         .param("from", "1100")
                         .param("to", "1200")
                         .param("baseYear", "2025"))
@@ -152,7 +153,7 @@ class CarControllerMvcTest {
         String expectedJson = Files.readString(path);
 
         // Assert: Perform the GET request and check the response
-        mockMvc.perform(get("/api/v1/cars/annual-tax-range")
+        mockMvc.perform(get("/api/v1/tax/cars/annual-tax-range")
                         .param("from", "50")
                         .param("to", "126")
                         .param("baseYear", "2025"))
@@ -193,7 +194,7 @@ class CarControllerMvcTest {
         String requestJson = Files.readString(requestPath);
 
         // Perform the PUT request to update the car
-        mockMvc.perform(put("/api/v1/car/3")
+        mockMvc.perform(put("/api/v1/car/4")
                         .contentType("application/json")
                         .content(requestJson))
                 .andExpect(status().isOk());
@@ -213,7 +214,7 @@ class CarControllerMvcTest {
     public void shouldUpdateCarPrice() throws Exception {
         // Perform the PATCH request to update the car price
         mockMvc.perform(patch("/api/v1/car/3")
-                        .param("price", "42000"))
+                        .param("price", "30000"))
                 .andExpect(status().isOk());
 
         // Load the expected JSON from the file

@@ -1,7 +1,8 @@
 {
+  "id": 4,
   "carModel": "F-150",
   "manufacturer": "Ford",
-  "modelYear": 2020,
+  "modelYear": 2023,
   "fuelType": "PETROL",
   "emissions": 0.1,
   "price": 40000
