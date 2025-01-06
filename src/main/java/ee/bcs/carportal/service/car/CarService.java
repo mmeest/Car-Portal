@@ -38,8 +38,9 @@ public class CarService {
     public List<Car> getGreenCarsInPriceRange(int from, int to) {
         List<Car> result = new ArrayList<>();
         for (Car car : carRepository.findAll()) {
-            if (car.getPrice() >= from && car.getPrice() <= to &&
-                    (car.getFuelType() == FuelType.ELECTRIC || car.getFuelType() == FuelType.HYBRID)) {
+            boolean isWithinPriceRange = car.getPrice() >= from && car.getPrice() <= to;
+            boolean isGreenCar = car.getFuelType() == FuelType.ELECTRIC || car.getFuelType() == FuelType.HYBRID;
+            if (isWithinPriceRange && isGreenCar) {
                 result.add(car);
             }
         }
