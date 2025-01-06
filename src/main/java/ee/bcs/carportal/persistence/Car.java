@@ -11,19 +11,6 @@ public class Car {
     private double emissions;
     private int price;
 
-    // Constructors
-    public Car() {
-    }
-
-    public Car(String carModel, String manufacturer, int modelYear, FuelType fuelType, double emissions, int price) {
-        this.carModel = carModel;
-        this.manufacturer = manufacturer;
-        this.modelYear = modelYear;
-        this.fuelType = fuelType;
-        this.emissions = emissions;
-        this.price = price;
-    }
-
     public Car(Integer id, String carModel, String manufacturer, int modelYear, FuelType fuelType, double emissions, int price) {
         this.id = id;
         this.carModel = carModel;
