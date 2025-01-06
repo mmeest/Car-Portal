@@ -3,19 +3,17 @@ package ee.bcs.carportal.controller;
 import ee.bcs.carportal.persistence.Car;
 import ee.bcs.carportal.service.CarService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/api/v1")
 @RestController
+@RequestMapping("/api/v1")
+@RequiredArgsConstructor
 public class CarController {
 
     private final CarService carService;
-
-    public CarController(CarService carService) {
-        this.carService = carService;
-    }
 
     // Mandatory endpoints go to below
     // Please use @Tag annotation as below with all mandatory endpoints:
