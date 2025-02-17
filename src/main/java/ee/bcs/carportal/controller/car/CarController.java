@@ -5,6 +5,7 @@ import ee.bcs.carportal.service.car.CarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,6 +20,11 @@ public class CarController {
     @GetMapping("/cars/all")
     public List<Car> getAllCars() {
         return carService.getAllCars();
+    }
+
+    @GetMapping("/cars/price-range")
+    public List<Car> findCarsInPriceRange(@RequestParam Integer from, @RequestParam Integer to) {
+        return carService.findCarsInPriceRange(from, to);
     }
 
 }

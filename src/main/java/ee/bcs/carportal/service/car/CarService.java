@@ -17,4 +17,8 @@ public class CarService {
         return carRepository.findAll();
     }
 
+    public List<Car> findCarsInPriceRange(Integer from, Integer to) {
+        return carRepository.findCarsBy(from, to);
+    }
+
 }
