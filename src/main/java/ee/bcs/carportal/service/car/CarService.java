@@ -21,4 +21,8 @@ public class CarService {
         return carRepository.findCarsBy(from, to);
     }
 
+    public List<Car> findCarsInPriceRangeWithFuelType(Integer from, Integer to, String fuelTypeCode ) {
+        return carRepository.findCarsBy(from, to, fuelTypeCode);
+    }
+
 }

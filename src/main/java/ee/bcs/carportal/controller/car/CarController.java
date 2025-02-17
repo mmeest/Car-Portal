@@ -27,4 +27,9 @@ public class CarController {
         return carService.findCarsInPriceRange(from, to);
     }
 
+    @GetMapping("/cars/price-range-fueltype")
+    public List<Car> findCarsInPriceRangeWithFuelType(@RequestParam Integer from, @RequestParam Integer to, @RequestParam String fuelTypeCode ) {
+        return carService.findCarsInPriceRangeWithFuelType(from, to, fuelTypeCode);
+    }
+
 }
