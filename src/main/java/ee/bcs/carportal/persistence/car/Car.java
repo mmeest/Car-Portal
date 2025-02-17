@@ -37,7 +37,7 @@ public class Car {
     private String model;
 
     @NotNull
-    @Column(name = "year", nullable = false)
+    @Column(name = "\"year\"", nullable = false)
     private Integer year;
 
     @NotNull
