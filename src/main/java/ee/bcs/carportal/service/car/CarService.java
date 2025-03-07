@@ -1,7 +1,7 @@
 package ee.bcs.carportal.service.car;
 
 import ee.bcs.carportal.persistence.car.Car;
-import ee.bcs.carportal.persistence.car.CarMapperImplementation;
+import ee.bcs.carportal.persistence.car.CarMapper;
 import ee.bcs.carportal.repository.car.CarRepository;
 import ee.bcs.carportal.service.car.dto.CarInfo;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +14,7 @@ import java.util.List;
 public class CarService {
 
     private final CarRepository carRepository;
-    private final CarMapperImplementation carMapper;
+    private final CarMapper carMapper;
 
     public CarInfo findCarInfo(Integer carId){
         if(carId == null){
@@ -26,8 +26,12 @@ public class CarService {
         return carMapper.toCarInfo(car);
     }
 
-    public List<Car> getAllCars() {
-        return carRepository.findAll();
+    public List<CarInfo> getAllCars() {
+        List<Car> cars = carRepository.findAll();
+
+        List<CarInfo> carInfos = carMapper.toCarInfos(cars);
+
+        return carInfos;
     }
 
     public List<Car> findCarsInPriceRange(Integer from, Integer to) {
@@ -37,5 +41,4 @@ public class CarService {
     public List<Car> findCarsInPriceRangeWithFuelType(Integer from, Integer to, String fuelTypeCode ) {
         return carRepository.findCarsBy(from, to, fuelTypeCode);
     }
-
 }

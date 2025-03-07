@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CarInfo {
+public class CarInfo{
     String make;
     String modelName;
     Integer releaseYear;
