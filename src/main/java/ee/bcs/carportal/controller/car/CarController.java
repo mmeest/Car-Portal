@@ -51,4 +51,9 @@ public class CarController {
     public void updateCar(@PathVariable Integer carId, @RequestBody CarDto carDto){
         carService.updateCar(carId, carDto);
     }
+
+    @DeleteMapping("/car/{carId}")
+    public void deleteCar(@PathVariable Integer carId){
+        carService.deleteCar(carId);
+    }
 }
