@@ -16,4 +16,12 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
             order by c.price""")
     List<Car> findCarsBy(Integer priceFrom, Integer priceTo, String fuelTypeCode);
 
+    @Query("""
+            SELECT (count(c) > 0)
+            FROM Car c
+            WHERE c.manufacturer.id = :manufacturerId 
+            AND c.model = :model 
+            AND c.year = :year
+            """)
+    boolean carExistsBy(Integer manufacturerId, String model, Integer year);
 }

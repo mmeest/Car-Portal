@@ -1,5 +1,7 @@
 package ee.bcs.carportal.service.car;
 
+import ee.bcs.carportal.infrastructure.exception.DatabaseConflictException;
+import ee.bcs.carportal.infrastructure.exception.ResourceNotFoundException;
 import ee.bcs.carportal.persistence.car.Car;
 import ee.bcs.carportal.persistence.car.CarMapper;
 import ee.bcs.carportal.persistence.car.CarRepository;
@@ -29,7 +31,7 @@ public class CarService {
             return null;
         }
 
-        Car car = carRepository.getReferenceById(carId);
+        Car car = carRepository.findById(carId).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
 
         return carMapper.toCarInfo(car);
     }
@@ -38,7 +40,7 @@ public class CarService {
         if(carId == null){
             return null;
         }
-        Car car = carRepository.getReferenceById(carId);
+        Car car = carRepository.findById(carId).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
         return carMapper.toCarDetailedInfo(car);
     }
 
@@ -56,6 +58,11 @@ public class CarService {
     }
 
     public void addCar(CarDto carDto) {
+        boolean carExists = carRepository.carExistsBy(carDto.getManufacturerId(), carDto.getModel(), carDto.getYear());
+        if (carExists) {
+            throw new DatabaseConflictException("Car already exists");
+        }
+
         Manufacturer manufacturer = fetchManufacturerById(carDto.getManufacturerId());
         FuelType fuelType = fetchFuelTypeById(carDto.getFuelType());
         Car car = createCar(carDto, manufacturer, fuelType);
@@ -63,8 +70,7 @@ public class CarService {
     }
 
     public void updateCar(Integer carId, CarDto carDto){
-        //applyUpdates(carDto, car);
-        Car car = carRepository.getReferenceById(carId);
+        Car car = carRepository.findById(carId).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
         Manufacturer manufacturer = fetchManufacturerById(carDto.getManufacturerId());
         FuelType fuelType = fetchFuelTypeById(carDto.getFuelType());
 
@@ -74,8 +80,10 @@ public class CarService {
         carRepository.save(car);
     }
 
-    public void deleteCar(Integer carId){
-        carRepository.deleteById(carId);
+    public void deleteCar(Integer carId) {
+        Car car = carRepository.findById(carId)
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
+        carRepository.delete(car);
     }
 
     // -------------- PRIVATE METHODS BELOW --------------->8
@@ -88,12 +96,12 @@ public class CarService {
 
     private Manufacturer fetchManufacturerById(Integer manufacturerId) {
         return manufacturerRepository.findById(manufacturerId)
-                .orElseThrow(() -> new RuntimeException("Manufacturer not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
     }
 
     private FuelType fetchFuelTypeById(Integer fuelTypeId) {
         return fuelTypeRepository.findById(fuelTypeId)
-                .orElseThrow(() -> new RuntimeException("FuelType not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
     }
 
     private Car createCar(CarDto carDto, Manufacturer manufacturer, FuelType fuelType) {
