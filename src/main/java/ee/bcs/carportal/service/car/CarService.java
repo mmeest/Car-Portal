@@ -7,6 +7,7 @@ import ee.bcs.carportal.persistence.fueltype.FuelType;
 import ee.bcs.carportal.persistence.fueltype.FuelTypeRepository;
 import ee.bcs.carportal.persistence.manufacturer.Manufacturer;
 import ee.bcs.carportal.persistence.manufacturer.ManufacturerRepository;
+import ee.bcs.carportal.service.car.dto.CarDetailedInfo;
 import ee.bcs.carportal.service.car.dto.CarDto;
 import ee.bcs.carportal.service.car.dto.CarInfo;
 import lombok.RequiredArgsConstructor;
@@ -33,12 +34,17 @@ public class CarService {
         return carMapper.toCarInfo(car);
     }
 
+    public CarDetailedInfo findCarDetailedInfo(Integer carId){
+        if(carId == null){
+            return null;
+        }
+        Car car = carRepository.getReferenceById(carId);
+        return carMapper.toCarDetailedInfo(car);
+    }
+
     public List<CarInfo> getAllCars() {
         List<Car> cars = carRepository.findAll();
-
-        List<CarInfo> carInfos = carMapper.toCarInfos(cars);
-
-        return carInfos;
+        return carMapper.toCarInfos(cars);
     }
 
     public List<Car> findCarsInPriceRange(Integer from, Integer to) {
@@ -52,19 +58,35 @@ public class CarService {
     public void addCar(CarDto carDto) {
         Manufacturer manufacturer = fetchManufacturerById(carDto.getManufacturerId());
         FuelType fuelType = fetchFuelTypeById(carDto.getFuelType());
-
         Car car = createCar(carDto, manufacturer, fuelType);
-
         carRepository.save(car);
     }
 
-    // Aitab leida Manufactureri ID järgi
+    public void updateCar(Integer carId, CarDto carDto){
+        //applyUpdates(carDto, car);
+        Car car = carRepository.getReferenceById(carId);
+        Manufacturer manufacturer = fetchManufacturerById(carDto.getManufacturerId());
+        FuelType fuelType = fetchFuelTypeById(carDto.getFuelType());
+
+        carMapper.updateCar(carDto, car);
+        car.setManufacturer(manufacturer);
+        car.setFuelType(fuelType);
+        carRepository.save(car);
+    }
+
+    // -------------- PRIVATE METHODS BELOW --------------->8
+
+
+    private void applyUpdates(CarDto carDto, Car car) {
+        carMapper.updateCar(carDto, car);
+    }
+
+
     private Manufacturer fetchManufacturerById(Integer manufacturerId) {
         return manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new RuntimeException("Manufacturer not found"));
     }
 
-    // Aitab leida FuelType ID järgi
     private FuelType fetchFuelTypeById(Integer fuelTypeId) {
         return fuelTypeRepository.findById(fuelTypeId)
                 .orElseThrow(() -> new RuntimeException("FuelType not found"));

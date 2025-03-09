@@ -11,6 +11,7 @@ import lombok.Setter;
 @Entity
 @Table(name = "manufacturer")
 public class Manufacturer {
+
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "manufacturer_id_gen")
     @SequenceGenerator(name = "manufacturer_id_gen", sequenceName = "manufacturer_id_seq", allocationSize = 1)
@@ -22,4 +23,12 @@ public class Manufacturer {
     @Column(name = "name", nullable = false)
     private String name;
 
+    // **Vaikimisi konstruktor (nõutud Hibernate'i poolt)**
+    public Manufacturer() {
+    }
+
+    // **Konstruktor, mida MapStruct kasutab**
+    public Manufacturer(Integer id) {
+        this.id = id;
+    }
 }
