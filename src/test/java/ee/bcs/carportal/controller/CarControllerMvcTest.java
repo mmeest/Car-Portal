@@ -1,5 +1,7 @@
 package ee.bcs.carportal.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import ee.bcs.carportal.service.car.dto.CarDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -8,11 +10,12 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.util.ResourceUtils;
 
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -24,6 +27,44 @@ class CarControllerMvcTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    // Add Car Test
+    @Test
+    public void shouldAddCar() throws Exception {
+        CarDto newCar = new CarDto( 1, 1, "Model S", 2020, new BigDecimal("0.00"), 55000);
+        String json = new ObjectMapper().writeValueAsString(newCar);
+
+        mockMvc.perform(post("/api/v1/car")
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isOk());
+    }
+
+    // Find Car Info Test
+    @Test
+    public void shouldReturnCarInfo() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_car_info.json").toURI());
+        String expectedJson = Files.readString(path);
+
+        mockMvc.perform(get("/api/v1/car/{carId}", 1)) // Replace 1 with a valid car ID
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
+    }
+
+    // Find Car Detailed Info Test
+    @Test
+    public void shouldReturnCarDetailedInfo() throws Exception {
+        // Load the expected JSON from the file
+        Path path = Paths.get(ResourceUtils.getFile("classpath:files/expected_car_detailed_info.json").toURI());
+        String expectedJson = Files.readString(path);
+
+        mockMvc.perform(get("/api/v1/car/detailed-info/{carId}", 1)) // Replace 1 with a valid car ID
+                .andExpect(status().isOk())
+                .andExpect(content().contentType("application/json"))
+                .andExpect(content().json(expectedJson));
+    }
 
     @Test
     public void shouldReturnAllCars() throws Exception {
@@ -108,6 +149,25 @@ class CarControllerMvcTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("application/json"))
                 .andExpect(content().json("[]"));
+    }
+
+    // Update Car Test
+    @Test
+    public void shouldUpdateCar() throws Exception {
+        CarDto updatedCar = new CarDto(3, 2, "Model 3", 2020,new BigDecimal("5.55"),3000);
+        String json = new ObjectMapper().writeValueAsString(updatedCar);
+
+        mockMvc.perform(put("/api/v1/car/{carId}", 1) // Replace ID with a valid car ID
+                        .contentType("application/json")
+                        .content(json))
+                .andExpect(status().isOk());
+    }
+
+    // Delete Car Test
+    @Test
+    public void shouldDeleteCar() throws Exception {
+        mockMvc.perform(delete("/api/v1/car/{carId}", 5)) // Replace ID with a valid car ID
+                .andExpect(status().isOk());
     }
 
 }
