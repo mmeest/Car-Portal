@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class CarDetailedInfo extends CarInfo {
-    String fuelType;
-    BigDecimal emissions;
-    Integer price;
+    private String fuelType;
+    private BigDecimal emissions;
+    private Integer price;
 }

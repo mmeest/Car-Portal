@@ -37,6 +37,7 @@ public interface CarMapper {
     @InheritConfiguration(name = "toCar")
     @Mapping(target = "manufacturer", source = "manufacturerId", qualifiedByName = "toManufacturer")
     Car updateCar(CarDto carDto, @MappingTarget Car car);
+    //void updateCar(CarDto carDto, @MappingTarget Car car);
 
     default String map(FuelType fuelType) {
         return fuelType != null ? fuelType.getName() : null;

@@ -11,16 +11,20 @@ public interface CarRepository extends JpaRepository<Car, Integer> {
     List<Car> findCarsBy(Integer priceFrom, Integer priceTo);
 
     @Query("""
-            select c from Car c
-            where c.price between :priceFrom and :priceTo and c.fuelType.code = :fuelTypeCode
-            order by c.price""")
+            SELECT c
+            FROM Car c
+            WHERE c.price
+            BETWEEN :priceFrom
+            AND :priceTo
+            AND c.fuelType.code = :fuelTypeCode
+            ORDER BY c.price""")
     List<Car> findCarsBy(Integer priceFrom, Integer priceTo, String fuelTypeCode);
 
     @Query("""
             SELECT (count(c) > 0)
             FROM Car c
-            WHERE c.manufacturer.id = :manufacturerId 
-            AND c.model = :model 
+            WHERE c.manufacturer.id = :manufacturerId
+            AND c.model = :model
             AND c.year = :year
             """)
     boolean carExistsBy(Integer manufacturerId, String model, Integer year);

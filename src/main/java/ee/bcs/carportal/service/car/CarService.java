@@ -32,7 +32,6 @@ public class CarService {
         }
 
         Car car = carRepository.findById(carId).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
-
         return carMapper.toCarInfo(car);
     }
 
@@ -64,7 +63,7 @@ public class CarService {
         }
 
         Manufacturer manufacturer = fetchManufacturerById(carDto.getManufacturerId());
-        FuelType fuelType = fetchFuelTypeById(carDto.getFuelType());
+        FuelType fuelType = fetchFuelTypeById(carDto.getFuelTypeId());
         Car car = createCar(carDto, manufacturer, fuelType);
         carRepository.save(car);
     }
@@ -72,7 +71,7 @@ public class CarService {
     public void updateCar(Integer carId, CarDto carDto){
         Car car = carRepository.findById(carId).orElseThrow(() -> new ResourceNotFoundException("Resource not found"));
         Manufacturer manufacturer = fetchManufacturerById(carDto.getManufacturerId());
-        FuelType fuelType = fetchFuelTypeById(carDto.getFuelType());
+        FuelType fuelType = fetchFuelTypeById(carDto.getFuelTypeId());
 
         carMapper.updateCar(carDto, car);
         car.setManufacturer(manufacturer);
@@ -89,9 +88,9 @@ public class CarService {
     // -------------- PRIVATE METHODS BELOW --------------->8
 
 
-    private void applyUpdates(CarDto carDto, Car car) {
+    /*private void applyUpdates(CarDto carDto, Car car) {
         carMapper.updateCar(carDto, car);
-    }
+    }*/
 
 
     private Manufacturer fetchManufacturerById(Integer manufacturerId) {

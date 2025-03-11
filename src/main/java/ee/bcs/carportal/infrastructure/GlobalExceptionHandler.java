@@ -5,6 +5,7 @@ import ee.bcs.carportal.infrastructure.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -34,4 +35,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(apiError, apiError.getStatus());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<ApiError> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
+        String errorMessage = ex.getBindingResult().getFieldErrors().getFirst().getDefaultMessage();
+        ApiError apiError = new ApiError();
+
+        // Lisa logi
+        System.out.println("Validation error: " + errorMessage);
+
+        apiError.setStatus(HttpStatus.BAD_REQUEST);
+        apiError.setErrorCode(HttpStatus.BAD_REQUEST.value());
+        apiError.setMessage(errorMessage);
+        apiError.setPath(request.getRequestURI());
+        return new ResponseEntity<>(apiError, apiError.getStatus());
+    }
 }
