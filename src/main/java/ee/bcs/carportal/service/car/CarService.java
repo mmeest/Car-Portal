@@ -87,12 +87,6 @@ public class CarService {
 
     // -------------- PRIVATE METHODS BELOW --------------->8
 
-
-    /*private void applyUpdates(CarDto carDto, Car car) {
-        carMapper.updateCar(carDto, car);
-    }*/
-
-
     private Manufacturer fetchManufacturerById(Integer manufacturerId) {
         return manufacturerRepository.findById(manufacturerId)
                 .orElseThrow(() -> new ResourceNotFoundException("Resource not found"));

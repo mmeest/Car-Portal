@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,7 +31,8 @@ public class CarController {
     @Operation(summary = "Adds a new car to the system", description = "Accepts a CarDto object and saves it to the database")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Car added successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public void addCar(@RequestBody @Valid CarDto carDto) {
         carService.addCar(carDto);
@@ -40,19 +42,21 @@ public class CarController {
     @Operation(summary = "Retrieves basic car information", description = "Returns car detaileds for a given carId")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Car found"),
-            @ApiResponse(responseCode = "404", description = "Car not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "404", description = "Car not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public CarInfo findCarInfo(@PathVariable Integer carId){
         return carService.findCarInfo(carId);
     }
 
-    @GetMapping("/detailed-info/{carId}")
+    @GetMapping("/car/detailed-info/{carId}")
     @Operation(summary = "Retrieves detailed car information", description = "Returns comprehensive details of a car using carId")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Car found"),
-            @ApiResponse(responseCode = "404", description = "Car not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "404", description = "Car not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
-    public CarDetailedInfo findCarDetailedInfo(@PathVariable Integer carId) {
+    public CarDetailedInfo findCarDetailedInfo(@PathVariable(name = "carId") Integer carId) {
         return carService.findCarDetailedInfo(carId);
     }
 
@@ -69,9 +73,10 @@ public class CarController {
     @Operation(summary = "Retrieves cars within a specific price range", description = "Returns a list of cars with prices between from an to")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of cars retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid price range", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "400", description = "Invalid price range",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
-    public List<Car> findCarsInPriceRange(@RequestParam @Valid Integer from, @RequestParam @Valid Integer to) {
+    public List<Car> findCarsInPriceRange(@RequestParam Integer from, @RequestParam Integer to) {
         return carService.findCarsInPriceRange(from, to);
     }
 
@@ -79,9 +84,10 @@ public class CarController {
     @Operation(summary = "Regrieves cars based on price and fuel type", description = "Returns a list of cars within a price range that match the specific fuel type")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "List of cars retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
-    public List<Car> findCarsInPriceRangeWithFuelType(@RequestParam @Valid Integer from, @RequestParam @Valid Integer to, @RequestParam String fuelTypeCode ) {
+    public List<Car> findCarsInPriceRangeWithFuelType(@RequestParam  Integer from, @RequestParam Integer to, @RequestParam String fuelTypeCode ) {
         return carService.findCarsInPriceRangeWithFuelType(from, to, fuelTypeCode);
     }
 
@@ -89,18 +95,22 @@ public class CarController {
     @Operation(summary = "Updates car details", description = "Modifies an existing car record identified by carId with new data")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Car updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Invalid input data", content = @Content(schema = @Schema(implementation = ApiError.class))),
-            @ApiResponse(responseCode = "400", description = "Invalid input data", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "404", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ApiError.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid input data",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public void updateCar(@PathVariable Integer carId, @RequestBody @Valid CarDto carDto){
         carService.updateCar(carId, carDto);
     }
 
     @DeleteMapping("/car/{carId}")
+    // @ResponseStatus(HttpStatus.NO_CONTENT)      // Added for response code 204
     @Operation(summary = "Removes a car from the system", description = "Deletes the car entry associated with the given carId")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "Car deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Car not found", content = @Content(schema = @Schema(implementation = ApiError.class)))
+            @ApiResponse(responseCode = "200", description = "Car deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "Car not found",
+                    content = @Content(schema = @Schema(implementation = ApiError.class)))
     })
     public void deleteCar(@PathVariable Integer carId){
         carService.deleteCar(carId);
