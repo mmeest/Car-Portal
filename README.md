@@ -1,3 +1,9 @@
+<div>
+  <p align="center">
+    <img src="https://github.com/mmeest/Car-Portal/blob/main/java.jpg" height="350px">
+  </p>
+</div>
+
 # Java Backend Application
 
 ##  Overview
