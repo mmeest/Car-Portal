@@ -43,19 +43,49 @@ Features
 ## Project Structure
 
 ```
-/java-backend
-│── src/main/java/com/example/project
-│   ├── config          # Configuration classes
-│   ├── controller      # REST Controllers
-│   ├── dto             # Data Transfer Objects (DTOs)
-│   ├── entity          # JPA Entities
-│   ├── exception       # Custom Exception Handling
-│   ├── mapper          # MapStruct Mappers
-│   ├── repository      # JPA Repositories
-│   ├── service         # Business Logic Services
-│── src/main/resources  # Application Properties & Static Resources
-│── pom.xml             # Maven Dependencies
-│── README.md           # Project Documentation
+project/
+├── src/
+│   └── main/
+│       ├── java/
+│       │   └── ee.bcs.carportal/
+│       │       ├── controller/                                 # Rest Controllers
+│       │       │   └── car/
+│       │       │       └── CarController.java                  # CarController processes car-related API requests
+│       │       ├── infrastructure/                             # Infrastructure files to handle exceptions, global error handling, etc.
+│       │       │   ├── exception/                              # Custom exceptions for handling error scenarios
+│       │       │   │   ├── DatabaseConflictException.java      # Custom exception for handling database conflicts (e.g., duplicate data)
+│       │       │   │   └── ResourceNotFoundException.java      # Custom exception for handling non-existent resources (e.g., car not found)
+│       │       │   ├── ApiError.java                           # Encapsulates error response structure (e.g., status, message, timestamp)
+│       │       │   ├── Error.java                              # General error object, potentially used for all types of exceptions
+│       │       │   ├── GlobalExceptionHandler.java             # Global handler to manage and format exceptions across the app
+│       │       ├── persistence/                                # Persistence layer for database operations (repositories, entities, mappers)
+│       │       │   ├── car/                                    # Car-related persistence files
+│       │       │   │   ├── Car.java                            # Entity representing the Car table in the database
+│       │       │   │   ├── CarMapper.java                      # Mapper interface to convert between Car entity and CarDto (Data Transfer Object)
+│       │       │   │   └── CarRepository.java                  # Repository interface for database CRUD operations for Car entity
+│       │       │   ├── fueltype/                               # FuelType persistence files (fuel types for cars)
+│       │       │   │   ├── FuelType.java                       # Entity representing fuel types
+│       │       │   │   └── FuelTypeRepository.java             # Interface for CRUD operations related to FuelType
+│       │       │   ├── fueltypetax/                            # Tax information for fuel types
+│       │       │   │   └── FuelTypeTax.java                    # Entity representing fuel type tax information
+│       │       │   ├── manufacturer/                           # Manufacturer-related persistence files
+│       │       │   │   ├── Manufacturer.java                   # Entity representing a car manufacturer
+│       │       │   │   └── ManufacturerRepository.java         # Interface for CRUD operations related to Manufacturer
+│       │       │   ├── taxtype/                                # Tax type information
+│       │       │   │   └── TaxType.java                        # Entity representing tax types
+│       │       └── service/                                    # Service layer, business logic for processing car-related operations
+│       │           └── car/
+│       │               ├── dto/                                # DTOs (Data Transfer Objects) to send data over the network
+│       │               │   ├── CarDetailedInfo.java            # DTO used for car detailed information
+│       │               │   ├── CarDto.java                     # DTO representing car data sent in API responses
+│       │               │   └── CarInfo.java                    # DTO used for car information
+│       │               └── CarService.java                     # Service that contains business logic related to car operations (e.g., retrieving car info, creating cars)
+│       └── resources/                                          # Resources folder for application configuration and database setup
+│           ├── application.properties                          # Application configuration file (e.g., database connection, logging, etc.)
+│           ├── data.sql                                        # SQL file for populating initial data into the database
+│           └── schema.sql                                      # SQL file for defining database schema (tables, indexes, etc.)
+└── build.gradle                                                # Gradle build file to manage dependencies, build tasks, and project configurations
+
 ```
 
 ## Getting Started
