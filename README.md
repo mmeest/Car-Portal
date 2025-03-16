@@ -1,6 +1,6 @@
-#Java Backend Application
+# Java Backend Application
 
-##Overview
+##  Overview
 
 This repository contains a Java-based backend application built using Spring Boot. The application follows best practices for backend development, including DTO mappings, exception handling, validations, and API documentation.
 
@@ -18,7 +18,7 @@ Features
 
 *OpenAPI Documentation: Uses Swagger annotations to document REST APIs.
 
-##Technologies Used
+## Technologies Used
 
 *Java (JDK 17+ recommended)
 
@@ -34,7 +34,7 @@ Features
 
 *Swagger (OpenAPI 3.0)
 
-##Project Structure
+## Project Structure
 
 ```
 /java-backend
@@ -52,7 +52,7 @@ Features
 │── README.md           # Project Documentation
 ```
 
-##Getting Started
+## Getting Started
 
 Prerequisites
 
@@ -64,7 +64,7 @@ Ensure you have the following installed:
 
 *PostgreSQL/MySQL (or any supported database)
 
-###Installation & Running Locally
+### Installation & Running Locally
 
 1.Clone the Repository:
 
@@ -89,7 +89,7 @@ mvn clean install
 mvn spring-boot:run
 ```
 
-##API Documentation
+## API Documentation
 
 Once the application is running, API documentation is available at:
 
@@ -97,9 +97,9 @@ Once the application is running, API documentation is available at:
 
 *OpenAPI JSON: http://localhost:8080/v3/api-docs
 
-##Development Guidelines
+## Development Guidelines
 
-###DTO & Entity Mapping
+### DTO & Entity Mapping
 
 Use MapStruct to map entities to DTOs efficiently.
 
@@ -113,7 +113,7 @@ Use custom exceptions for better error reporting.
 
 Implement global exception handling in the application.
 
-###Soft Deletes
+### Soft Deletes
 
 Entities should use a soft delete approach where records are flagged as deleted rather than permanently removed.
 
