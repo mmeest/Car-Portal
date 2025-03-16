@@ -6,33 +6,33 @@ This repository contains a Java-based backend application built using Spring Boo
 
 Features
 
-*DTOs & Mapping: Implements DTOs (Data Transfer Objects) using MapStruct for efficient object mapping.
+* DTOs & Mapping: Implements DTOs (Data Transfer Objects) using MapStruct for efficient object mapping.
 
-*JPA Integration: Utilizes Spring Data JPA with JPA Buddy for DTO creation.
+* JPA Integration: Utilizes Spring Data JPA with JPA Buddy for DTO creation.
 
-*Error Handling: Implements structured exception handling with custom exceptions.
+* Error Handling: Implements structured exception handling with custom exceptions.
 
-*Validation: JPA validations ensure data integrity.
+* Validation: JPA validations ensure data integrity.
 
-*Soft Deletes: Implements logical deletion for better data management.
+* Soft Deletes: Implements logical deletion for better data management.
 
-*OpenAPI Documentation: Uses Swagger annotations to document REST APIs.
+* OpenAPI Documentation: Uses Swagger annotations to document REST APIs.
 
 ## Technologies Used
 
-*Java (JDK 17+ recommended)
+* Java (JDK 17+ recommended)
 
-*Spring Boot
+* Spring Boot
 
-*Spring Data JPA
+* Spring Data JPA
 
-*MapStruct
+* MapStruct
 
-*Hibernate
+* Hibernate
 
-*PostgreSQL/MySQL (Configurable database support)
+* PostgreSQL/MySQL (Configurable database support)
 
-*Swagger (OpenAPI 3.0)
+* Swagger (OpenAPI 3.0)
 
 ## Project Structure
 
@@ -58,11 +58,11 @@ Prerequisites
 
 Ensure you have the following installed:
 
-*JDK 17+
+* JDK 17+
 
-*Maven
+* Maven
 
-*PostgreSQL/MySQL (or any supported database)
+* PostgreSQL/MySQL (or any supported database)
 
 ### Installation & Running Locally
 
@@ -93,9 +93,9 @@ mvn spring-boot:run
 
 Once the application is running, API documentation is available at:
 
-*Swagger UI: http://localhost:8080/swagger-ui.html
+* Swagger UI: http://localhost:8080/swagger-ui.html
 
-*OpenAPI JSON: http://localhost:8080/v3/api-docs
+* OpenAPI JSON: http://localhost:8080/v3/api-docs
 
 ## Development Guidelines
 
