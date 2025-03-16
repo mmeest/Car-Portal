@@ -143,7 +143,7 @@ Best practices for naming DTO classes should be followed.
 
 Avoid exposing entity objects directly in API responses.
 
-###Error Handling
+### Error Handling
 
 Use custom exceptions for better error reporting.
 
